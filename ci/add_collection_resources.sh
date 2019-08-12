@@ -11,6 +11,71 @@ stack_id=$(basename $stack_dir)
 release_url="https://github.com/$TRAVIS_REPO_SLUG/releases/download"
 collection=$stack_dir/collection.yaml
 
+if [ -z $ASSET_LIST ]; then
+    asset_list="pipelines dashboards deploys"
+else 
+    asset_list=$ASSET_LIST
+fi
+
+process_assets () {
+    asset_types=$1
+    asset_type="${asset_types%?}"
+    
+    if [ -d $stack_dir/$asset_types ]
+    then
+        echo "$asset_types:" >> $index_file
+        for asset_dir in $stack_dir/$asset_types/*/
+        do
+            if [ -d $asset_dir ]
+            then
+                asset_id=$(basename $asset_dir)
+                asset_archive=$repo_name.$stack_id.$asset_type.$asset_id.tar.gz
+
+                if [ $build = true ]
+                then
+                    asset_build=$assets_dir/asset_temp
+                    mkdir -p $asset_build
+                
+                    asset_manifest=$asset_build/manifest.yaml
+                    echo "contents:" > $asset_manifest
+                
+                    cp -r $asset_dir/* $asset_build
+                
+                    for asset in "$asset_build"/*
+                    do
+                        if [ -f $asset ] && [ "$(basename -- $asset)" != "manifest.yaml" ]
+                        then
+                            sha256=$(cat $asset | $sha256cmd | awk '{print $1}')
+                            filename=$(basename -- $asset) 
+                            echo "- file: $filename" >> $asset_manifest
+                            echo "  sha256: $sha256" >> $asset_manifest
+                        fi
+                    done
+                    # build template archives
+                    tar -czf $assets_dir/$asset_archive -C $asset_build .
+                    echo -e "--- Created $asset_type archive: $asset_archive"
+                    rm -fr $asset_build
+                fi
+
+                echo "- id: $asset_id" >> $index_file
+                echo "  url: $release_url/$release_name/$asset_archive" >> $index_file
+                if [ -f $assets_dir/$asset_archive ]
+                then
+                    sha256=$(cat $assets_dir/$asset_archive | $sha256cmd | awk '{print $1}')
+                fi
+                echo "  sha256: $sha256" >> $index_file
+
+                #if [ $i -eq 0 ]
+                #then
+                #    echo "- $release_url/$release_name/$asset_archive" >> $index_file_temp
+                #    echo "- file://$assets_dir/$asset_archive" >> $index_file_test_temp
+                #    ((i+=1))
+                #fi
+            fi
+        done
+    fi
+}
+
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sha256cmd="shasum --algorithm 256"    # Mac OSX
 else
@@ -72,110 +137,8 @@ then
     done
 fi
 
-
-if [ -d $stack_dir/pipelines ]
-then
-    echo "pipelines:" >> $index_file
-    for pipeline_dir in $stack_dir/pipelines/*/
-    do
-        if [ -d $pipelines_dir ]
-        then
-            pipeline_id=$(basename $pipeline_dir)
-            pipeline_archive=$repo_name.$stack_id.pipeline.$pipeline_id.tar.gz
-
-            if [ $build = true ]
-            then
-                pipeline_build=$assets_dir/pipeline_temp
-                mkdir -p $pipeline_build
-                
-                pipeline_manifest=$pipeline_build/manifest.yaml
-                echo "contents:" > $pipeline_manifest
-                
-                cp -r $pipeline_dir/* $pipeline_build
-                
-                for pipeline in "$pipeline_build"/*
-                do
-                    if [ -f $pipeline ] && [ "$(basename -- $pipeline)" != "manifest.yaml" ]
-                    then
-                        sha256=$(cat $pipeline | $sha256cmd | awk '{print $1}')
-                        filename=$(basename -- $pipeline) 
-                        echo "- file: $filename" >> $pipeline_manifest
-                        echo "  sha256: $sha256" >> $pipeline_manifest
-                    fi
-                done
-                # build template archives
-                tar -czf $assets_dir/$pipeline_archive -C $pipeline_build .
-                echo -e "--- Created pipeline archive: $pipeline_archive"
-                rm -fr $pipeline_build
-            fi
-
-            echo "- id: $pipeline_id" >> $index_file
-            echo "  url: $release_url/$release_name/$pipeline_archive" >> $index_file
-            if [ -f $assets_dir/$pipeline_archive ]
-            then
-                sha256=$(cat $assets_dir/$pipeline_archive | $sha256cmd | awk '{print $1}')
-            fi
-            echo "  sha256: $sha256" >> $index_file
-
-            #if [ $i -eq 0 ]
-            #then
-            #    echo "- $release_url/$release_name/$pipeline_archive" >> $index_file_temp
-            #    echo "- file://$assets_dir/$pipeline_archive" >> $index_file_test_temp
-            #    ((i+=1))
-            #fi
-        fi
-    done
-fi
-if [ -d $stack_dir/dashboards ]
-then
-    echo "dashboards:" >> $index_file
-    for dashboard_dir in $stack_dir/dashboards/*/
-    do
-        if [ -d $dashboards_dir ]
-        then
-            dashboard_id=$(basename $dashboard_dir)
-            dashboard_archive=$repo_name.$stack_id.dashboard.$dashboard_id.tar.gz
-
-            if [ $build = true ]
-            then
-                dashboard_build=$assets_dir/dashboard_build
-                mkdir -p $dashboard_build
-                
-                dashboard_manifest=$dashboard_build/manifest.yaml
-                echo "contents:" > $dashboard_manifest
-                
-                cp -r $dashboard_dir $dashboard_build
-                
-                for dashboard in "$dashboard_build"/*
-                do
-                    if [ -f $dashboard ] && [ "$(basename -- $dashboard)" != "manifest.yaml" ]
-                    then
-                        sha256=$(cat $dashboard | $sha256cmd | | awk '{print $1}')
-                        filename=$(basename -- $dashboard) 
-                        echo "- file: $filename" >> $dashboard_manifest
-                        echo "  sha256: $sha256" >> $dashboard_manifest
-                    fi
-                done
-                # build template archives
-                tar -czf $assets_dir/$dashboard_archive -C $dashboard_build .
-                echo -e "--- Created dashboard archive: $dashboard_archive"
-                rm -fr $dashboard_build
-            fi
-
-            echo "- id: $dashboard_id" >> $index_file
-            echo "  url: $release_url/$release_name/$dashboard_archive" >> $index_file
-            if [ -f $assets_dir/$dashboard_archive ]
-            then
-                sha256=$(cat $assets_dir/$dashboard_archive | $sha256cmd | | awk '{print $1}')
-            fi
-            echo "  sha256: $sha256" >> $index_file
-
-            #if [ $i -eq 0 ]
-            #then
-            #    echo "- $release_url/$release_name/$dashboard_archive" >> $index_file_temp
-            #    echo "- file://$assets_dir/$dashboard_archive" >> $index_file_test_temp
-            #    ((i+=1))
-            #fi
-        fi
-    done
-fi
+#process the assets
+for asset in $asset_list
+do
+    process_assets $asset
+done
