@@ -3,8 +3,9 @@ set -e
 
 base_dir=$1
 stack_dir=$2
-repo_name=$3
-index_file=$4
+stack_version=$3
+repo_name=$4
+index_file=$5
 assets_dir=$base_dir/ci/assets
 stack_id=$(basename $stack_dir)
 release_url="https://github.com/$TRAVIS_REPO_SLUG/releases/download"
@@ -14,6 +15,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     sha256cmd="shasum --algorithm 256"    # Mac OSX
 else
     sha256cmd="sha256sum "  # other OSs
+fi
+
+if [ -z $BUILD_ALL ]
+then
+   release_name=$stack_id-v$stack_version
+else
+   release_name=$BUILD_ALL
 fi
 
 if [ -f $collection ]
@@ -102,7 +110,7 @@ then
             fi
 
             echo "- id: $pipeline_id" >> $index_file
-            echo "  url: $release_url/$stack_id-v$stack_version/$pipeline_archive" >> $index_file
+            echo "  url: $release_url/$release_name/$pipeline_archive" >> $index_file
             if [ -f $assets_dir/$pipeline_archive ]
             then
                 sha256=$(cat $assets_dir/$pipeline_archive | $sha256cmd | awk '{print $1}')
@@ -111,7 +119,7 @@ then
 
             #if [ $i -eq 0 ]
             #then
-            #    echo "- $release_url/$stack_id-v$stack_version/$pipeline_archive" >> $index_file_temp
+            #    echo "- $release_url/$release_name/$pipeline_archive" >> $index_file_temp
             #    echo "- file://$assets_dir/$pipeline_archive" >> $index_file_test_temp
             #    ((i+=1))
             #fi
@@ -155,7 +163,7 @@ then
             fi
 
             echo "- id: $dashboard_id" >> $index_file
-            echo "  url: $release_url/$stack_id-v$stack_version/$dashboard_archive" >> $index_file
+            echo "  url: $release_url/$release_name/$dashboard_archive" >> $index_file
             if [ -f $assets_dir/$dashboard_archive ]
             then
                 sha256=$(cat $assets_dir/$dashboard_archive | $sha256cmd | | awk '{print $1}')
@@ -164,7 +172,7 @@ then
 
             #if [ $i -eq 0 ]
             #then
-            #    echo "- $release_url/$stack_id-v$stack_version/$dashboard_archive" >> $index_file_temp
+            #    echo "- $release_url/$release_name/$dashboard_archive" >> $index_file_temp
             #    echo "- file://$assets_dir/$dashboard_archive" >> $index_file_test_temp
             #    ((i+=1))
             #fi
