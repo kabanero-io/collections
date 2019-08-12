@@ -25,7 +25,10 @@ else
 fi
 
 # dockerhub org for publishing stack
-export DOCKERHUB_ORG=appsody
+if [ -z $DOCKERHUB_ORG ]
+then
+   export DOCKERHUB_ORG=appsody
+fi
 
 mkdir -p $assets_dir
 
@@ -89,6 +92,13 @@ do
                     echo -e "\n- SKIPPING stack: $repo_name/$stack_id"
                 fi
 
+                if [ -z $BUILD_ALL ]
+                then
+                    release_name=$stack_id-v$stack_version
+                else
+                    release_name=$BUILD_ALL
+                fi
+
                 echo "  $stack_id:" >> $index_file_v1
                 echo "  - updated: $(date -u +'%Y-%m-%dT%H:%M:%S%z')"  >> $index_file_v1
                 sed 's/^/    /' $stack >> $index_file_v1
@@ -120,14 +130,14 @@ do
                         fi
 
                         echo "      - id: $template_id" >> $index_file_v2
-                        echo "        url: $release_url/$stack_id-v$stack_version/$template_archive" >> $index_file_v2
+                        echo "        url: $release_url/$release_name/$template_archive" >> $index_file_v2
 
                         echo "      - id: $template_id" >> $index_file_test
                         echo "        url: file://$assets_dir/$template_archive" >> $index_file_test
 
                         if [ $i -eq 0 ]
                         then
-                            echo "    - $release_url/$stack_id-v$stack_version/$template_archive" >> $index_file_v1
+                            echo "    - $release_url/$release_name/$template_archive" >> $index_file_v1
                             ((i+=1))
                         fi
                     fi
