@@ -19,7 +19,7 @@ then
 
     for changed_stacks in $CHANGED_FILES
     do
-        if [[ $changed_stacks == *stack.yaml ]]
+        if [[ $changed_stacks == *stack.yaml ]] || [[ $changed_stacks == *collection.yaml ]]
         then
             var=`awk '{split($1, a, "/*"); print a[1]"/"a[2]}' <<< $changed_stacks`
             STACKS_LIST+=("$var")
