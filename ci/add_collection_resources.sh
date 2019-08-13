@@ -86,7 +86,11 @@ if [ -z $BUILD_ALL ]
 then
    release_name=$stack_id-v$stack_version
 else
-   release_name=$BUILD_ALL
+    if [ -f $base_dir/VERSION ]; then
+        release_name=$(cat $base_dir/VERSION)
+    else
+        release_name=$BUILD_ALL
+    fi
 fi
 
 if [ -f $collection ]
