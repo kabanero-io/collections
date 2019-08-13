@@ -25,7 +25,7 @@ else
 fi
 
 # dockerhub org for publishing stack
-export DOCKERHUB_ORG=appsody
+export DOCKERHUB_ORG=kabanero
 
 mkdir -p $assets_dir
 
