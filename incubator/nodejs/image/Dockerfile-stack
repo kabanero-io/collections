@@ -27,7 +27,8 @@ ENV APPSODY_TEST_KILL=false
 
 COPY ./project /project
 
-RUN cd /project;npm install
+WORKDIR /project
+RUN npm install
 
 WORKDIR /project/user-app
 
