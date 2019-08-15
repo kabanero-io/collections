@@ -8,16 +8,20 @@ RUN yum upgrade -y \
  && yum clean packages \
  && echo 'Finished installing dependencies'
 
+RUN groupadd --gid 1000 node \
+ && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+
 # Install user-app dependencies
 WORKDIR "/project/user-app"
 COPY ./user-app/package*.json ./
 RUN npm install --production
 
+RUN chown -R node:node /project
+
 WORKDIR "/project/user-app"
 
 ENV NODE_ENV production
 
-# Need to work out what user to run node images under - TODO
-# USER node
+USER node
 
 CMD ["npm", "start"]
