@@ -1,1 +1,1 @@
-stack: kabanero/nodejs:0.2
+stack: appsody/nodejs:0.2
