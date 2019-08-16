@@ -1,7 +1,6 @@
-apiVersion: tekton.dev/v1alpha1
 kind: Pipeline
 metadata:
-  name: dev-pipeline
+  name: nodejs-express-build-pipeline
 spec:
   resources:
     - name: git-source
@@ -11,7 +10,7 @@ spec:
   tasks:
     - name: appsody-build
       taskRef:
-        name: appsody-build-task
+        name: nodejs-express-appsody-build-task
       resources:
         inputs:
         - name: git-source
