@@ -17,4 +17,4 @@ fi
 . $base_dir/ci/package.sh $base_dir
 . $base_dir/ci/test.sh $base_dir
 
-python $base_dir/ci/create_codewind_index.py $base_dir
+python3 $base_dir/ci/create_codewind_index.py $base_dir
