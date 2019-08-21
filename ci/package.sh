@@ -117,8 +117,10 @@ do
     fi
 done
 
+
 #expose an extension point for running after main 'package' processing
 if [ -f $base_dir/ci/ext/post_package.sh ]
 then
     . $base_dir/ci/ext/post_package.sh $base_dir
 fi
+
