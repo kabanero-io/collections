@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  name: collections-build-task-run
+spec:
+  serviceAccount: collections-repository
+  taskRef:
+    name: collections-build-task
+  inputs:
+    resources:
+      - name: git-source
+        resourceSpec:
+          type: git
+          params:
+            - name: revision
+              value: tekton_build
+            - name: url
+              value: https://github.com/jgawor/collections.git
+    params:
+      - name: clusterSubdomain
+        value: 10.211.54.251.nip.io

@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kabanero-collections
+  labels:
+    app: kabanero-collections
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kabanero-collections
+  template:
+    metadata:
+      labels:
+        app: kabanero-collections
+      annotations:
+        date: "DATE"
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: nginx
+        image: docker-registry.default.svc:5000/NAMESPACE/collections-repository:TAG
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /etc/tls/private
+          name: kabanero-collections-tls
+        env:
+        - name: EXTERNAL_URL
+          value: "https://HOST"
+      volumes:
+      - name: kabanero-collections-tls
+        secret:
+          secretName: kabanero-collections-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kabanero-collections
+  labels:
+    app: kabanero-collections
+  annotations:
+    service.alpha.openshift.io/serving-cert-secret-name: kabanero-collections-tls
+spec:
+  type: ClusterIP
+  selector:
+    app: kabanero-collections
+  ports:
+  - name: https
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: kabanero-collections
+spec:
+  host: HOST
+  to:
+    kind: Service
+    name: kabanero-collections
+  tls:
+    termination: Reencrypt
+    insecureEdgeTerminationPolicy: Redirect
