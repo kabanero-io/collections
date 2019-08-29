@@ -1,8 +1,8 @@
 FROM registry.access.redhat.com/ubi8/nodejs-10
 
 LABEL vendor="Kabanero" \
-    name="Kabanero Node.js Express" \
-    version="0.1.0" \
+    name="kabanero/nodejs-express" \
+    version="0.2.5" \
     summary="Image for Kabanero Node.js Express development" \
     description="This image contains the Kabanero development stack for the Nodejs Express collection"
 
