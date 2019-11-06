@@ -1,0 +1,90 @@
+FROM kabanero/ubi8-maven
+
+# passed in via package script
+ARG GIT_ORG_REPO=appsody/stacks
+ARG IMAGE_REGISTRY_ORG=appsody
+ARG STACK_ID=java-spring-boot2-rhr
+ARG MAJOR_VERSION=0
+ARG MINOR_VERSION=1
+ARG PATCH_VERSION=1
+
+LABEL vendor="Kabanero" \
+    name="kabanero/java-spring-boot2-rhr" \
+    version="0.1.1" \
+    summary="Image for Kabanero java-spring-boot2-rhr development" \
+    description="This image contains the Kabanero development stack for the java-spring-boot2-rhr collection"
+
+USER root
+
+RUN groupadd --gid 1000 java_group \
+  && useradd --uid 1000 --gid java_group --shell /bin/bash --create-home java_user
+
+COPY ./LICENSE /licenses/
+
+COPY ./project /project
+COPY ./config /config
+COPY ./mvn-stack-settings.xml /usr/share/maven/conf/settings.xml
+COPY ./mvn-stack-settings.xml /project/mvn-stack-settings.xml
+
+
+# Verify properties used to control versions match between this stack and official spring dependencies.
+RUN /project/verify-property-versions.sh
+
+# Build utility for version range processing
+# Install maven wrapper in /project
+RUN mkdir -p /mvn/repository \
+ && /project/util/check_version build \
+ && cd /project \
+ && mvn --no-transfer-progress -B -N io.takari:maven:wrapper -Dmaven=$(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout)
+
+# Update maven artifacts to use stack version information
+# Update Dockerfile to build from this appsody stack image (by range)
+RUN if [ ${MAJOR_VERSION} -eq 0 ]; then \
+      export IMAGE_VERSION=${MAJOR_VERSION}.${MINOR_VERSION}; \
+    else \
+      export IMAGE_VERSION=${MAJOR_VERSION}; \
+    fi \
+ && export MAVEN_ARTIFACT_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}" \
+ && sed -i -e "s|{{APPSODY_STACK}}|${IMAGE_REGISTRY_ORG}/${STACK_ID}:${IMAGE_VERSION}|" \
+           -e "s|{{APPSODY_STACK_FULL}}|${IMAGE_REGISTRY_ORG}/${STACK_ID}:${MAVEN_ARTIFACT_VERSION}|" /project/Dockerfile \
+ && sed -i -e "s|{{MAVEN_ARTIFACT_VERSION}}|${MAVEN_ARTIFACT_VERSION}|" /project/appsody-boot2-pom.xml
+
+WORKDIR /project/user-app
+
+RUN mkdir -p /mvn/repository
+RUN chown -R java_user:java_group /project
+RUN chown -R java_user:java_group /config
+RUN chown -R java_user:java_group /mvn
+
+USER java_user
+ENV MAVEN_CONFIG "~/.m2"
+
+ENV APPSODY_USER_RUN_AS_LOCAL=true
+ENV APPSODY_PROJECT_DIR="/project"
+
+ENV APPSODY_MOUNTS=".:/project/user-app;~/.m2/repository:/mvn/repository"
+ENV APPSODY_DEPS=
+
+ENV APPSODY_WATCH_DIR="/project/user-app/src"
+ENV APPSODY_WATCH_IGNORE_DIR=""
+ENV APPSODY_WATCH_REGEX="(^.*\.java$)|(^.*\.properties$)|(^.*\.yaml$)|(^.*\.html$)|(^.*\.sql$)|(^.*\.js$)|(^.*\.properties$)"
+
+ENV APPSODY_RUN="/project/java-spring-boot2-build.sh run"
+ENV APPSODY_RUN_ON_CHANGE="/project/java-spring-boot2-build.sh recompile"
+ENV APPSODY_RUN_KILL=false
+
+ENV APPSODY_DEBUG="/project/java-spring-boot2-build.sh debug"
+ENV APPSODY_DEBUG_ON_CHANGE="/project/java-spring-boot2-build.sh recompile"
+ENV APPSODY_DEBUG_KILL=false
+
+ENV APPSODY_TEST="/project/java-spring-boot2-build.sh test"
+ENV APPSODY_TEST_ON_CHANGE=""
+ENV APPSODY_TEST_KILL=true
+
+ENV PORT=8080
+
+EXPOSE 8080
+EXPOSE 8443
+EXPOSE 5005
+EXPOSE 35729
+ENTRYPOINT ["/project/java-spring-boot2-build.sh", "run"]
