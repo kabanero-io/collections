@@ -58,7 +58,7 @@
 
   <properties>
     <!-- Required library versions -->
-    <spring-boot-bom.version>2.1.6.Final</spring-boot-bom.version>
+    <spring-boot-bom.version>2.1.6.SP3-redhat-00001</spring-boot-bom.version>
     <spring-boot.version>2.1.6.RELEASE</spring-boot.version>
 
     <opentracing-spring-jaeger-web-starter.version>2.0.0</opentracing-spring-jaeger-web-starter.version>
