@@ -12,8 +12,15 @@ RUN /project/util/check_version build \
 
 USER java_user
 
-####
-FROM registry.redhat.io/redhat-openjdk-18/openjdk18-openshift
+
+### Base image for app.
+
+## Requires Auth
+## FROM registry.redhat.io/redhat-openjdk-18/openjdk18-openshift
+
+## Unauthed as per https://access.redhat.com/containers/?tab=images&get-method=unauthenticated#/registry.access.redhat.com/redhat-openjdk-18/
+openjdk18-openshift
+FROM registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift
 
 ARG artifactId=appsody-spring
 ARG version=1.0-SNAPSHOT
