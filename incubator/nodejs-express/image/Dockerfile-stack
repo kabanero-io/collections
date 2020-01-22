@@ -32,14 +32,14 @@ ENV APPSODY_TEST="npm test && npm test --prefix user-app"
 ENV APPSODY_TEST_ON_CHANGE=""
 ENV APPSODY_TEST_KILL=false
 
-COPY ./LICENSE /licenses/
-COPY ./project /project
-COPY ./config /config
+COPY --chown=node:node ./LICENSE /licenses/
+COPY --chown=node:node ./project /project
+COPY --chown=node:node ./config /config
 
-RUN chown -R default:root /project
-WORKDIR /project
-USER default
+USER node
+
 RUN mkdir -p /project/user-app/node_modules
+WORKDIR /project
 RUN npm install
 
 ENV PORT=3000
