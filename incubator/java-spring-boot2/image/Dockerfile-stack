@@ -22,6 +22,11 @@ RUN /project/verify-property-versions.sh
 
 USER java_user
 
+RUN mvn -version
+RUN mvn help:evaluate -Dexpression=maven.version -q -DforceStdout
+RUN echo $(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout)
+RUN VAR=$(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout) ; echo $VAR
+
 # Build utility for version range processing
 # Install maven wrapper in /project
 RUN /project/util/check_version build \
