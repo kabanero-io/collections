@@ -20,6 +20,10 @@ RUN  /project/util/check_version build
 
 WORKDIR /project/
 RUN mkdir -p /mvn/repository
+RUN mvn -version
+RUN mvn help:evaluate -Dexpression=maven.version -q -DforceStdout
+RUN echo $(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout)
+RUN VAR=$(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout) ; echo $VAR
 RUN mvn -B -Dmaven.repo.local=/mvn/repository -N io.takari:maven:wrapper -Dmaven=$(mvn help:evaluate -Dexpression=maven.version -q -DforceStdout)
 RUN mvn -B -Dmaven.repo.local=/mvn/repository install dependency:go-offline -DskipTests
 RUN mvn -B -Dmaven.repo.local=/mvn/repository install dependency:go-offline -DskipTests -f pom-dev.xml
