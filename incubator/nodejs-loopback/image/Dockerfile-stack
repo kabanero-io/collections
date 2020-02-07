@@ -7,7 +7,6 @@ LABEL vendor="Kabanero" \
     description="This image contains the Kabanero development stack for the Nodejs Loopback collection"
 
 USER root
-RUN mkdir -p /project/user-app
 ENV APPSODY_MOUNTS=/:/project/user-app
 ENV APPSODY_DEPS=/project/user-app/node_modules
 
