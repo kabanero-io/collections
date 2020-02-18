@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: collections-build-task
+  name: stacks-build-task
 spec:
   inputs:
     resources:
@@ -12,7 +12,7 @@ spec:
         type: string
         description: Docker registry
         default: image-registry.openshift-image-registry.svc:5000
-      - name: namespace
+      - name: registryNamespace
         type: string
         description: Namespace
         default: kabanero
@@ -35,15 +35,13 @@ spec:
         - -cex
         - |
           # install yq
-          curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
-          chmod +x /usr/local/bin/yq
+          /workspace/git-source/ci/install_yq.sh
+
+          # install appsody
+          /workspace/git-source/ci/download_cli.sh
 
           # install git
           yum install -y git which findutils
-
-          curl -L -s -o "appsody-0.5.4-1.x86_64.rpm" "https://github.com/groeges/appsody/releases/download/0.5.4/appsody-0.5.4-1.x86_64.rpm"
-          sudo yum install -y appsody-0.5.4-1.x86_64.rpm
-          rm appsody-0.5.4-1.x86_64.rpm
                 
           # install pyyaml
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -54,12 +52,11 @@ spec:
           export USE_BUILDAH="true"
           export BUILDAH_FORMAT="docker"
           export IMAGE_REGISTRY="$(inputs.params.registry)"
-          export IMAGE_REGISTRY_ORG="$(inputs.params.namespace)"
+          export IMAGE_REGISTRY_ORG="$(inputs.params.registryNamespace)"
           export IMAGE_REGISTRY_PUBLISH="true"
           # disable tests as 'appsody run' does not work without docker
           export SKIP_TESTS="true"
           cd /workspace/git-source/
-          ./ci/prefetch.sh
           ./ci/build.sh .
           ./ci/release.sh
       env:
@@ -82,7 +79,7 @@ spec:
             sed -i -e 's/HOST/$(inputs.params.hostname).$(inputs.params.clusterSubdomain)/' $YAML_FILE
           fi
           sed -i -e 's/REGISTRY/$(inputs.params.registry)/' $YAML_FILE
-          sed -i -e 's/NAMESPACE/$(inputs.params.namespace)/' $YAML_FILE
+          sed -i -e 's/NAMESPACE/$(inputs.params.registryNamespace)/' $YAML_FILE
           sed -i -e 's/TAG/latest/' $YAML_FILE
           sed -i -e "s/DATE/$(date --utc '+%FT%TZ')/" $YAML_FILE
           kubectl apply --validate=false -f $YAML_FILE
