@@ -15,6 +15,10 @@ spec:
       type: string
       description: Namespace
       default: kabanero
+    - name: stacks
+      type: string
+      description: List of stacks to build. Specify 'all' to build all stacks.
+      default: all
   tasks:
     - name: build-task
       taskRef:
@@ -28,3 +32,5 @@ spec:
           value: "$(params.registry)"
         - name: registryNamespace
           value: "$(params.registryNamespace)"
+        - name: stacks
+          value: "$(params.stacks)"

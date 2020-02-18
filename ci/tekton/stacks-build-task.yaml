@@ -16,6 +16,10 @@ spec:
         type: string
         description: Namespace
         default: kabanero
+      - name: stacks
+        type: string
+        description: List of stacks to build. Specify 'all' to build all stacks.
+        default: all
       - name: hostname
         type: string
         description: Hostname of the application hosting collections
@@ -44,9 +48,7 @@ spec:
           yum install -y git which findutils
                 
           # install pyyaml
-          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-          python3 get-pip.py
-          pip install pyyaml
+          pip3 install pyyaml
 
           # do build and release
           export USE_BUILDAH="true"
@@ -57,7 +59,11 @@ spec:
           # disable tests as 'appsody run' does not work without docker
           export SKIP_TESTS="true"
           cd /workspace/git-source/
-          ./ci/build.sh .
+          if [ "$(inputs.params.stacks)" == "all" ]; then
+            ./ci/build.sh
+          else
+            ./ci/build.sh $(inputs.params.stacks)
+          fi
           ./ci/release.sh
       env:
         - name: gitsource
