@@ -28,6 +28,11 @@ Use these steps to trigger a Tekton pipeline build of your collections repositor
 
 1. Deploy the `stacks-build-git-resource.yaml` file via `oc -n kabanero apply -f stacks-build-git-resource.yaml`
 
+1. If you are using GitHub Enterprise, [create a secret](https://github.com/tektoncd/pipeline/blob/master/docs/auth.md#basic-authentication-git) and associate it with the `kabanero-index` service account. For example:
+    ```
+    oc -n kabanero secrets link kabanero-index basic-user-pass
+    ```
+
 1. Create `stacks-build-pipeline-run.yaml` file with the following contents.
 
     ```
@@ -44,16 +49,15 @@ Use these steps to trigger a Tekton pipeline build of your collections repositor
         resourceRef:
           name: stacks-build-git-resource
       params:
-        - name: deploymentSuffix
-          value: latest
+        - name: stacks
+          value: all
       serviceAccount: kabanero-index
       timeout: 60m
     ```
 
-
-1. If you are using GitHub Enterprise, [create a secret](https://github.com/tektoncd/pipeline/blob/master/docs/auth.md#basic-authentication-git) and associate it with the `kabanero-index` service account. For example:
+1. If you are deploying the stack images into a private container registry, [create a Docker registry's secret](https://github.com/tektoncd/pipeline/blob/master/docs/auth.md#kubernetess-docker-registrys-secret) and associate it with the `kabanero-index` service account.
     ```
-    oc -n kabanero secrets link kabanero-index basic-user-pass
+    oc -n kabanero secrets link kabanero-index my-registry --for=pull,mount
     ```
 
 1. Trigger build
