@@ -1,5 +1,5 @@
 
-Use these steps to trigger a Tekton pipeline build of your collections repository. The pipeline will build the collections and deploy a `kabanero-index` container into your cluster. The `kabanero-index` container hosts the Kabanero collections index file and related assets.
+Use these steps to trigger a Tekton pipeline build of your collections repository. The pipeline will build the stacks and deploy a `kabanero-index` container into your cluster. The `kabanero-index` container hosts the stacks index file and related assets.
 
 1. Deploy build task and pipeline
     ```
@@ -70,11 +70,11 @@ Use these steps to trigger a Tekton pipeline build of your collections repositor
 
    After the build completes successfully, a `kabanero-index` container is deployed into your cluster.
 
-1. Get the route for the `kabanero-index` pod and use it to generate a collections URL:
+1. Get the route for the `kabanero-index` pod and use it to generate a stacks index URL:
 
     ```
-    COLLECTIONS_URL=$(oc -n kabanero get route kabanero-index --no-headers -o=jsonpath='http://{.status.ingress[0].host}/kabanero-index.yaml')
-    echo $COLLECTIONS_URL
+    STACKS_INDEX_URL=$(oc -n kabanero get route kabanero-index --no-headers -o=jsonpath='http://{.status.ingress[0].host}/kabanero-index.yaml')
+    echo $STACKS_INDEX_URL
     ```
 
-1. Follow the [configuring a Kabanero CR instance](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) documentation to configure or deploy a Kabanero instance with the `COLLECTIONS_URL` obtained in the previous step. 
+1. Follow the [configuring a Kabanero CR instance](https://kabanero.io/docs/ref/general/configuration/kabanero-cr-config.html) documentation to configure or deploy a Kabanero instance with the `STACKS_URL` obtained in the previous step. 
