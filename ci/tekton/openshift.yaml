@@ -33,7 +33,8 @@ spec:
               else
                 echo "http://$ROUTE" >> /usr/share/kabanero/route
                 exit 0
-            fi
+              fi
+            done
             echo "Unable to get route"
             exit 1
         volumeMounts:
