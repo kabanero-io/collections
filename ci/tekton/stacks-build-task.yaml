@@ -20,14 +20,10 @@ spec:
         type: string
         description: List of stacks to build. Specify 'all' to build all stacks.
         default: all
-      - name: hostname
+      - name: routeHostname
         type: string
-        description: Hostname of the application hosting collections
-        default: kabanero-index
-      - name: clusterSubdomain
-        type: string
+        description: Hostname of the route for the application hosting stacks index
         default: ""
-        description: Cluster subdomain
 
   steps:
     - name: build-stacks
@@ -79,11 +75,12 @@ spec:
         - -cex
         - |
           YAML_FILE=/workspace/git-source/ci/tekton/openshift.yaml
-          if [ -z "$(inputs.params.clusterSubdomain)" ]; then
+          if [ -z "$(inputs.params.routeHostname)" ]; then
             sed -i -e '/host:/d' $YAML_FILE
           else
-            sed -i -e 's/HOST/$(inputs.params.hostname).$(inputs.params.clusterSubdomain)/' $YAML_FILE
+            sed -i -e 's/host:/host: $(inputs.params.routeHostname)/' $YAML_FILE
           fi
+          sed -i -e "s/HOST/$(inputs.params.routeName).$DOMAIN/" $YAML_FILE
           sed -i -e 's/REGISTRY/$(inputs.params.registry)/' $YAML_FILE
           sed -i -e 's/NAMESPACE/$(inputs.params.registryNamespace)/' $YAML_FILE
           sed -i -e 's/TAG/latest/' $YAML_FILE
