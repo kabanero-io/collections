@@ -20,7 +20,7 @@ RUN  /project/util/check_version build
 
 # Copy the user's application pom and resolve all dependencies
 COPY --chown=java_user:java_group ./user-app/pom.xml /project/user-app/pom.xml
-RUN cd /project/user-app && mvn package -Dskip=true -DskipTests
+RUN cd /project/user-app && mvn -B package -Dskip=true -DskipTests
 
 # Download Open Liberty here to prevent redownloading each time the app is changed
 RUN cd /project/user-app && mvn -B liberty:install-server
@@ -31,7 +31,7 @@ COPY --chown=java_user:java_group ./user-app/src /project/user-app/src
 RUN cd /project/user-app && \
     echo "QUICK START SECURITY IS NOT SECURE FOR PRODUCTION ENVIRONMENTS. IT IS BEING REMOVED" \
     rm -f src/main/liberty/config/configDropins/defaults/quick-start-security.xml && \
-    mvn package -DskipTests
+    mvn -B package -DskipTests
 
 RUN cd /project/user-app/target && \
     unzip *.zip && \
@@ -42,4 +42,5 @@ FROM openliberty/open-liberty:{{.stack.libertyversion}}-kernel-java8-openj9-ubi
 
 COPY --chown=1001:0 --from=compile /config/ /config/
 
-RUN configure.sh
+RUN configure.sh && \
+    chmod 664 /opt/ol/wlp/usr/servers/defaultServer/configDropins/defaults/keystore.xml 

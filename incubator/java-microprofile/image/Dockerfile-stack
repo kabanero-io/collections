@@ -36,7 +36,7 @@ RUN chmod -R 0777 /mvn
 
 ENV APPSODY_USER_RUN_AS_LOCAL=true
 
-ENV APPSODY_MOUNTS="~/.m2/repository:/mvn/repository;src:/project/user-app/src;pom.xml:/project/user-app/pom.xml"
+ENV APPSODY_MOUNTS=".:/project/user-app;~/.m2/repository:/mvn/repository"
 ENV APPSODY_DEPS=
 
 ENV APPSODY_WATCH_DIR=/project/user-app
@@ -46,11 +46,11 @@ ENV APPSODY_WATCH_REGEX="^.*(.xml|.java|.properties)$"
 ENV APPSODY_INSTALL="../validate.sh && mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository install -DskipTests && /project/install-dev-deps.sh"
 
 ENV APPSODY_RUN="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository liberty:run"
-ENV APPSODY_RUN_ON_CHANGE="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn --no-transfer-progress -Dmaven.repo.local=/mvn/repository package -DskipTests"
+ENV APPSODY_RUN_ON_CHANGE="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository package -DskipTests"
 ENV APPSODY_RUN_KILL=false
 
 ENV APPSODY_DEBUG="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository liberty:debug"
-ENV APPSODY_DEBUG_ON_CHANGE="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn --no-transfer-progress -Dmaven.repo.local=/mvn/repository package -DskipTests"
+ENV APPSODY_DEBUG_ON_CHANGE="JVM_ARGS='-javaagent:resources/javametrics-agent.jar' mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository package -DskipTests"
 ENV APPSODY_DEBUG_KILL=false
 
 ENV APPSODY_TEST="mvn -B --no-transfer-progress -Dmaven.repo.local=/mvn/repository verify"
